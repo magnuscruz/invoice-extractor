@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -78,17 +79,39 @@ app.get("/api/health", (req, res) => {
 });
 
 async function startServer() {
-  console.log(`Starting server in ${process.env.NODE_ENV} mode...`);
-  if (process.env.NODE_ENV !== "production") {
+  const env = (process.env.NODE_ENV || "").trim().toLowerCase();
+  const distPath = path.join(process.cwd(), 'dist');
+  const hasDist = fs.existsSync(path.join(distPath, 'index.html'));
+  
+  // Robust production detection
+  // 1. Explicitly set to production
+  // 2. OR we have a dist folder and are NOT explicitly in development
+  const isProduction = env === "production" || (hasDist && env !== "development");
+  
+  console.log("-----------------------------------------");
+  console.log(`Server starting at ${new Date().toISOString()}`);
+  console.log(`- NODE_ENV: [${process.env.NODE_ENV}]`);
+  console.log(`- Detected Mode: ${isProduction ? "PRODUCTION" : "DEVELOPMENT"}`);
+  console.log(`- Base Directory: ${process.cwd()}`);
+  console.log(`- Dist Folder Exists: ${hasDist}`);
+  console.log("-----------------------------------------");
+  
+  if (!isProduction) {
+    console.log("Mode: DEVELOPMENT (Mounting Vite middleware)");
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { 
+        middlewareMode: true,
+        allowedHosts: true,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    console.log("Mode: PRODUCTION (Serving static files)");
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      // Fallback for SPA
+      if (req.path.startsWith('/api')) return res.status(404).json({ error: "API route not found" });
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
