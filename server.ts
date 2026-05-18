@@ -79,20 +79,25 @@ app.get("/api/health", (req, res) => {
 });
 
 async function startServer() {
-  const env = (process.env.NODE_ENV || "").trim();
+  const env = (process.env.NODE_ENV || "").trim().toLowerCase();
   const distPath = path.join(process.cwd(), 'dist');
   const hasDist = fs.existsSync(path.join(distPath, 'index.html'));
   
-  // Decide if we should be in production mode
+  // Robust production detection
+  // 1. Explicitly set to production
+  // 2. OR we have a dist folder and are NOT explicitly in development
   const isProduction = env === "production" || (hasDist && env !== "development");
   
-  console.log(`Server starting...`);
+  console.log("-----------------------------------------");
+  console.log(`Server starting at ${new Date().toISOString()}`);
   console.log(`- NODE_ENV: [${process.env.NODE_ENV}]`);
   console.log(`- Detected Mode: ${isProduction ? "PRODUCTION" : "DEVELOPMENT"}`);
-  console.log(`- Has Dist Folder: ${hasDist}`);
+  console.log(`- Base Directory: ${process.cwd()}`);
+  console.log(`- Dist Folder Exists: ${hasDist}`);
+  console.log("-----------------------------------------");
   
   if (!isProduction) {
-    console.log("Mounting Vite middleware...");
+    console.log("Mode: DEVELOPMENT (Mounting Vite middleware)");
     const vite = await createViteServer({
       server: { 
         middlewareMode: true,
@@ -102,9 +107,11 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    console.log("Serving static files from /dist...");
+    console.log("Mode: PRODUCTION (Serving static files)");
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
+      // Fallback for SPA
+      if (req.path.startsWith('/api')) return res.status(404).json({ error: "API route not found" });
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
