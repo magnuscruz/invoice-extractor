@@ -78,6 +78,7 @@ app.get("/api/health", (req, res) => {
 });
 
 async function startServer() {
+  console.log(`Starting server in ${process.env.NODE_ENV} mode...`);
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
