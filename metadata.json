@@ -1,0 +1,6 @@
+{
+  "name": "Fatura PT Extractor",
+  "description": "Extração inteligente de dados de faturas portuguesas usando Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
