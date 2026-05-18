@@ -1,0 +1,17 @@
+{
+  "name": "Invoice Extractor Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:0-20",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig"
+      ]
+    }
+  },
+  "postCreateCommand": "npm install",
+  "forwardPorts": [3000],
+  "workspaceFolder": "/workspace",
+  "remoteUser": "node"
+}
