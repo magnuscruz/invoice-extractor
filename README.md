@@ -80,6 +80,18 @@ Se ao acessar a URL você receber um erro **403 Forbidden**, é porque o Cloud R
 
 *Nota: Já atualizei o script de deploy para tentar fazer isso automaticamente nos próximos pushes.*
 
+### 5. Configurando a Chave de API Manualmente (Se o GitHub falhar)
+
+Se a extração falhar com erro de API ou se você não quiser usar Secrets do GitHub agora, você pode configurar a chave diretamente via **Cloud Shell**:
+
+```bash
+gcloud run services update invoice-extractor \
+  --set-env-vars="GEMINI_API_KEY=SUA_CHAVE_AQUI" \
+  --region=europe-west1
+```
+
+Substitua `SUA_CHAVE_AQUI` pela sua chave do Google AI Studio.
+
 ### Solução de Problemas (Erro de Permissão no Push)
 
 Se o erro `denied: Permission 'artifactregistry.repositories.uploadArtifacts' denied` persistir:
