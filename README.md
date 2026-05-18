@@ -46,14 +46,48 @@ Aplicação inteligente para extração de dados de faturas e recibos do regime 
    npm run dev
    ```
 
-## ✅ Integração Contínua
+## 🚀 Deploy Automático (Google Cloud Run)
 
-Este projeto inclui um workflow do GitHub Actions em `.github/workflows/ci.yml` que executa as seguintes etapas em `push` e em `pull_request` para a branch `main`:
+Este repositório está configurado para deploy automático no Google Cloud Run via GitHub Actions sempre que houver um push na branch `main`.
 
-- Instala dependências: `npm install`
-- Verifica tipos com TypeScript: `npm run lint`
-- Constrói o projeto: `npm run build`
+### Configuração Necessária
 
-## 📄 Licença
+Para que o deploy funcione, você precisa configurar os seguintes **Secrets** no seu repositório GitHub (`Settings > Secrets and variables > Actions`):
 
-Este projeto é distribuído sob a licença Apache-2.0.
+1.  `GCP_PROJECT_ID`: O ID do seu projeto no Google Cloud.
+2.  `GCP_SA_KEY`: A chave JSON de uma Service Account com permissões de `Cloud Run Admin`, `Storage Admin` e `Service Account User`.
+3.  `GEMINI_API_KEY`: Sua chave de API do Google AI Studio.
+
+### Passos no Google Cloud
+
+1.  Habilite as APIs: **Artifact Registry**, **Cloud Run**, **Cloud Build** e **Service Usage**.
+2.  Crie uma Service Account e baixe a chave JSON.
+3.  **Importante**: Garanta que a Service Account tenha as seguintes funções (Roles):
+    -   `Administrador do Cloud Run` (Cloud Run Admin)
+    -   `Escritor do Artifact Registry` (Artifact Registry Writer)
+    -   `Usuário da conta de serviço` (Service Account User)
+
+### 4. Tornando a aplicação pública (Erro 403 Forbidden)
+
+Se ao acessar a URL você receber um erro **403 Forbidden**, é porque o Cloud Run está protegendo o acesso.
+
+**Como corrigir manualmente:**
+1. Vá ao Console do Google Cloud > **Cloud Run**.
+2. Clique no seu serviço `invoice-extractor`.
+3. Vá na aba **Segurança** (Security).
+4. Selecione **Permitir invocações não autenticadas** (Allow unauthenticated invocations).
+5. Clique em **Salvar**.
+
+*Nota: Já atualizei o script de deploy para tentar fazer isso automaticamente nos próximos pushes.*
+
+### Solução de Problemas (Erro de Permissão no Push)
+
+Se o erro `denied: Permission 'artifactregistry.repositories.uploadArtifacts' denied` persistir:
+
+1.  **Crie o repositório manualmente** (o GitHub não consegue criar sozinho sem permissão de Admin):
+    ```bash
+    gcloud artifacts repositories create gcr.io --repository-format=docker --location=europe-west1
+    ```
+2.  Certifique-se de que o nome do projeto no segredo `GCP_PROJECT_ID` do GitHub está exatamente igual ao ID do projeto no Google Cloud (não o nome, o ID).
+3.  Verifique se a região no arquivo `.github/workflows/google-cloudrun-deploy.yml` é a mesma onde você criou o repositório (`europe-west1`).
+
