@@ -46,14 +46,21 @@ Aplicação inteligente para extração de dados de faturas e recibos do regime 
    npm run dev
    ```
 
-## ✅ Integração Contínua
+## 🚀 Deploy Automático (Google Cloud Run)
 
-Este projeto inclui um workflow do GitHub Actions em `.github/workflows/ci.yml` que executa as seguintes etapas em `push` e em `pull_request` para a branch `main`:
+Este repositório está configurado para deploy automático no Google Cloud Run via GitHub Actions sempre que houver um push na branch `main`.
 
-- Instala dependências: `npm install`
-- Verifica tipos com TypeScript: `npm run lint`
-- Constrói o projeto: `npm run build`
+### Configuração Necessária
 
-## 📄 Licença
+Para que o deploy funcione, você precisa configurar os seguintes **Secrets** no seu repositório GitHub (`Settings > Secrets and variables > Actions`):
 
-Este projeto é distribuído sob a licença Apache-2.0.
+1.  `GCP_PROJECT_ID`: O ID do seu projeto no Google Cloud.
+2.  `GCP_SA_KEY`: A chave JSON de uma Service Account com permissões de `Cloud Run Admin`, `Storage Admin` e `Service Account User`.
+3.  `GEMINI_API_KEY`: Sua chave de API do Google AI Studio.
+
+### Passos no Google Cloud
+
+1.  Habilite as APIs: Cloud Run, Cloud Build e Container Registry.
+2.  Crie uma Service Account e baixe a chave JSON.
+3.  Garanta que a Service Account tenha as permissões mencionadas acima.
+
