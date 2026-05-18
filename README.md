@@ -57,6 +57,7 @@ Para que o deploy funcione, você precisa configurar os seguintes **Secrets** no
 1.  `GCP_PROJECT_ID`: O ID do seu projeto no Google Cloud.
 2.  `GCP_SA_KEY`: A chave JSON de uma Service Account com permissões de `Cloud Run Admin`, `Storage Admin` e `Service Account User`.
 3.  `GEMINI_API_KEY`: Sua chave de API do Google AI Studio.
+4.  `DEEPSEEK_API_KEY`: (Opcional) Sua chave de API da DeepSeek.
 
 ### Passos no Google Cloud
 

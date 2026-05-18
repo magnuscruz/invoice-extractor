@@ -1,17 +1,23 @@
-FROM node:20-bullseye-slim AS builder
+# Use a specific Node.js version
+FROM node:20-slim
+
+# Create app directory
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
-RUN npm ci
 
-COPY . ./
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Build the application
 RUN npm run build
 
-FROM node:20-bullseye-slim AS runner
-WORKDIR /app
+# Set environment to production
+ENV NODE_ENV=production
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-
-CMD ["npm", "start"]
+# Start the application
+CMD [ "npm", "start" ]
