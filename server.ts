@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
@@ -78,15 +79,30 @@ app.get("/api/health", (req, res) => {
 });
 
 async function startServer() {
-  console.log(`Starting server in ${process.env.NODE_ENV} mode...`);
-  if (process.env.NODE_ENV !== "production") {
+  const env = (process.env.NODE_ENV || "").trim();
+  const distPath = path.join(process.cwd(), 'dist');
+  const hasDist = fs.existsSync(path.join(distPath, 'index.html'));
+  
+  // Decide if we should be in production mode
+  const isProduction = env === "production" || (hasDist && env !== "development");
+  
+  console.log(`Server starting...`);
+  console.log(`- NODE_ENV: [${process.env.NODE_ENV}]`);
+  console.log(`- Detected Mode: ${isProduction ? "PRODUCTION" : "DEVELOPMENT"}`);
+  console.log(`- Has Dist Folder: ${hasDist}`);
+  
+  if (!isProduction) {
+    console.log("Mounting Vite middleware...");
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { 
+        middlewareMode: true,
+        allowedHosts: true,
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    console.log("Serving static files from /dist...");
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
