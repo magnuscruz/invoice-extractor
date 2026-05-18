@@ -53,6 +53,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ExtractionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [provider, setProvider] = useState<'gemini' | 'deepseek'>('gemini');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +98,7 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ image: base64Data, mimeType }),
+        body: JSON.stringify({ image: base64Data, mimeType, provider }),
       });
 
       if (!response.ok) {
@@ -197,7 +198,32 @@ export default function App() {
             />
           </div>
 
-          <div className="p-4 bg-white border-t border-slate-100">
+          <div className="p-4 bg-white border-t border-slate-100 space-y-3">
+            <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+              <button
+                onClick={() => setProvider('gemini')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[10px] font-bold transition-all ${
+                  provider === 'gemini' 
+                    ? 'bg-white text-primary shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${provider === 'gemini' ? 'bg-primary' : 'bg-slate-300'}`}></div>
+                GEMINI 3 FLASH
+              </button>
+              <button
+                onClick={() => setProvider('deepseek')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-[10px] font-bold transition-all ${
+                  provider === 'deepseek' 
+                    ? 'bg-white text-primary shadow-sm' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${provider === 'deepseek' ? 'bg-primary' : 'bg-slate-300'}`}></div>
+                DEEPSEEK V3 (HYBRID)
+              </button>
+            </div>
+            
             <button
               onClick={handleExtract}
               disabled={!preview || isLoading}

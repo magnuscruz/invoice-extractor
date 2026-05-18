@@ -8,3 +8,5 @@ dist/**
 
 # local environment variables
 .env
+
+.temp.*
