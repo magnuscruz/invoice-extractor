@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import OpenAI from "openai";
 import dotenv from "dotenv";
@@ -158,7 +157,8 @@ async function startServer() {
   console.log("-----------------------------------------");
   
   if (!isProduction) {
-    console.log("Mode: DEVELOPMENT (Mounting Vite middleware)");
+    console.log("Mode: DEVELOPMENT (Loading Vite...)");
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { 
         middlewareMode: true,
@@ -170,15 +170,28 @@ async function startServer() {
   } else {
     console.log("Mode: PRODUCTION (Serving static files)");
     app.use(express.static(distPath));
+    
+    // Explicitly handle health check first
+    app.get("/api/health", (req, res) => {
+      res.json({ status: "ok" });
+    });
+
     app.get('*', (req, res) => {
       // Fallback for SPA
-      if (req.path.startsWith('/api')) return res.status(404).json({ error: "API route not found" });
-      res.sendFile(path.join(distPath, 'index.html'));
+      if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: "API route not found" });
+      }
+      
+      if (hasDist) {
+        res.sendFile(path.join(distPath, 'index.html'));
+      } else {
+        res.status(500).send("Production build missing. Please run 'npm run build'.");
+      }
     });
   }
 
   app.listen(Number(PORT), "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server listening on 0.0.0.0:${PORT}`);
   });
 }
 
